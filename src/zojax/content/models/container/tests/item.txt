@@ -1,0 +1,130 @@
+=========================
+`Content Item` view model
+=========================
+
+  >>> from zope.testbrowser.testing import Browser
+
+  >>> actor = Browser()
+  >>> actor.addHeader("Authorization", "Basic mgr:mgrpw")
+  >>> actor.handleErrors = False
+
+  >>> actor.open("http://localhost/container/++extensions++/")
+  >>> actor.getLink('View model').click()
+  >>> actor.getControl(name='form.widgets.view:list').value = ['__default__']
+  >>> actor.getControl(name='form.buttons.save').click()
+
+  >>> actor.open("http://localhost/container/")
+  >>> print actor.contents
+  <html>
+  ...
+  ...<h1 class="z-content-title">My Container</h1>...
+  ...
+  <table class="z-table">
+  ...
+  ...<td>My Content 1</td>
+  ...<td>My Content 2</td>
+  ...
+  </table>
+  ...
+  </html>
+
+
+Enable view
+
+  >>> actor.open("http://localhost/container/++extensions++/")
+  >>> actor.getLink('View model').click()
+  >>> actor.getControl(name='form.widgets.view:list').value = ['content-item']
+  >>> actor.getControl(name='form.buttons.save').click()
+
+Configure view
+
+  >>> actor.getControl(name='viewmodeledit.widgets.item:list').value = ['content2']
+  >>> actor.getControl(name='viewmodeledit.buttons.save').click()
+
+Container should show view for content2
+
+  >>> actor.open("http://localhost/container/")
+  >>> print actor.contents
+  <html>
+  ...
+  ...<h1 class="z-content-title">My Content 2</h1>...
+  <div>My Content Body: My Content 2</div>
+  ...
+  </html>
+
+Show default container view if configared item is removed.
+
+  >>> from zope.app.testing.functional import getRootFolder
+  >>> root = getRootFolder()
+  >>> c = root['container']['content2']
+  >>> del root['container']['content2']
+
+  >>> actor.reload()
+  >>> print actor.contents
+  <html>
+  ...
+  ...<h1 class="z-content-title">My Container</h1>...
+  ...
+  </html>
+
+  >>> root['container']['content2'] = c
+
+
+Model view available only if container is viewable and container has contents
+
+  >>> from zope import interface
+  >>> from zojax.content.models.container.interfaces import IContainerModelsAware
+  >>> from zojax.content.model.tests.content import MyContent, MyContentContainer
+
+  >>> root['container10'] = MyContentContainer()
+  >>> interface.alsoProvides(root['container10'], IContainerModelsAware)
+
+  >>> actor.open("http://localhost/container10/++extensions++/")
+  >>> actor.getLink('View model').click()
+  >>> actor.getControl(name='form.widgets.view:list').value = ['__default__']
+  >>> actor.getControl(name='form.buttons.save').click()
+  >>> print actor.contents
+  <html>
+  ...
+  <span>Default</span>
+  ...
+  <span>Container listing</span>
+  ...
+  <span>Folder summary</span>
+  ...
+  </html>
+
+  >>> root['container10']['content1'] = MyContent()
+
+  >>> actor.reload()
+  >>> print actor.contents
+  <html>
+  ...
+  <span>Default</span>
+  ...
+  <span>Container listing</span>
+  ...
+  <span>Content item</span>
+  ...
+  <span>Folder summary</span>
+  ...
+  </html>
+
+  >>> from zope.securitypolicy.interfaces import IPrincipalPermissionManager
+
+  >>> manager = IPrincipalPermissionManager(root['container10']['content1'])
+  >>> manager.denyPermissionToPrincipal('zope.View', 'zope.mgr')
+
+  >>> actor.reload()
+  >>> print actor.contents
+  <html>
+  ...
+  <span>Default</span>
+  ...
+  <span>Container listing</span>
+  ...
+  <span>Folder summary</span>
+  ...
+  </html>
+
+  >>> del root['container10']

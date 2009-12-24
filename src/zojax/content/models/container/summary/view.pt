@@ -1,0 +1,23 @@
+<tal:block condition="view/model/text|nothing">
+  <tal:block content="structure view/model/text/cooked" />
+  <br />
+</tal:block>
+<br />
+
+<tal:block content="structure view/contents/@@pagelet/batch.view" />
+
+<table>
+  <tal:block tal:repeat="content view/contents">
+    <tr tal:define="item python:view.getInfo(content)">
+      <td>
+	<img tal:attributes="src item/image/purl" 
+	     tal:condition="item/image|nothing" style="padding: 0 1em 1em 0" />
+      </td>
+      <td style="padding-bottom: 1em">
+	<h3><a tal:content="item/title" tal:attributes="href item/url"></a></h3>
+	<div tal:content="item/description"></div>
+	<br />
+      </td>
+    </tr>
+  </tal:block>
+</table>

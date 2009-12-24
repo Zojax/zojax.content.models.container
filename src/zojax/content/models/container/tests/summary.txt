@@ -1,0 +1,157 @@
+=====================
+Folder `Summary` view
+=====================
+
+  >>> from zope.testbrowser.testing import Browser
+
+  >>> actor = Browser()
+  >>> actor.addHeader("Authorization", "Basic mgr:mgrpw")
+  >>> actor.handleErrors = False
+
+  >>> actor.open("http://localhost/container/++extensions++/")
+  >>> actor.getLink('View model').click()
+  >>> actor.getControl(name='form.widgets.view:list').value = ['__default__']
+  >>> actor.getControl(name='form.buttons.save').click()
+
+  >>> actor.open("http://localhost/container/")
+  >>> print actor.contents
+  <html>
+  ...
+  ...<h1 class="z-content-title">My Container</h1>...
+  ...
+  <table class="z-table">
+  ...
+  ...<td>My Content 1</td>
+  ...<td>My Content 2</td>
+  ...
+  </table>
+  ...
+  </html>
+
+
+Enable view
+
+  >>> actor.open("http://localhost/container/++extensions++/")
+  >>> actor.getLink('View model').click()
+  >>> actor.getControl(name='form.widgets.view:list').value = ['folder-summary']
+  >>> actor.getControl(name='form.buttons.save').click()
+
+Configure view
+
+  >>> actor.getControl(name="viewmodeledit.widgets.image:list").value = ['true']
+  >>> actor.getControl('Page size').value = '2'
+  >>> actor.getControl(name="viewmodeledit.widgets.text").value = \
+  ...        u'Custom folder summary description'
+  >>> actor.getControl(name='viewmodeledit.buttons.save').click()
+
+Container should show summaries for its contents
+
+  >>> actor.open("http://localhost/container/")
+  >>> print actor.contents
+  <html>
+  ...
+  ...<h1 class="z-content-title">My Container</h1>...
+  ...Custom folder summary description...
+  <tr>
+    <td>
+    </td>
+    <td style="padding-bottom: 1em">
+    	<h3><a href="http://localhost/container/content1/">My Content 1</a></h3>
+    	<div>My Content 1 description</div>
+    	<br />
+    </td>
+   </tr>
+   <tr>
+     <td>
+     </td>
+     <td style="padding-bottom: 1em">
+   	<h3><a href="http://localhost/container/content2/">My Content 2</a></h3>
+    	<div>My Content 2 description</div>
+    	<br />
+     </td>
+  </tr>
+  ...
+  </html>
+
+Image
+
+  >>> actor.open("http://localhost/container/content1/++extensions++/")
+  >>> actor.getLink('Attachments').click()
+  >>> actor.getLink('Image').click()
+
+  >>> import os.path
+  >>> filePath = os.path.join(os.path.split(__file__)[0], 'image.jpg')
+
+  >>> fileControl = actor.getControl('Attachment').mech_control
+  >>> fileControl.add_file(open(filePath), filename='image')
+  >>> actor.getControl(name='content.add.buttons.add').click()
+
+Summary with images
+
+  >>> actor.open("http://localhost/container/")
+  >>> print actor.contents
+  <html>
+  ...
+  ...<h1 class="z-content-title">My Container</h1>...
+  ...Custom folder summary description...
+  <tr>
+    <td>
+      <img style="padding: 0 1em 1em 0"
+           src="http://localhost/@@content.attachment/.../preview/100x100" />  
+    </td>
+    <td style="padding-bottom: 1em">
+    	<h3><a href="http://localhost/container/content1/">My Content 1</a></h3>
+    	<div>My Content 1 description</div>
+    	<br />
+    </td>
+   </tr>
+   <tr>
+     <td>
+     </td>
+     <td style="padding-bottom: 1em">
+   	<h3><a href="http://localhost/container/content2/">My Content 2</a></h3>
+    	<div>My Content 2 description</div>
+    	<br />
+     </td>
+  </tr>
+  ...
+  </html>
+
+
+View model using ordering if possible
+
+  >>> from zope import interface
+  >>> from zope.app.testing.functional import getRootFolder
+  >>> from zojax.content.type.interfaces import IAnnotatableOrder
+
+  >>> root = getRootFolder()
+  >>> interface.alsoProvides(root['container'], IAnnotatableOrder)
+
+  >>> actor.reload()
+  >>> print actor.contents
+  <html>
+  ...
+  ...<h1 class="z-content-title">My Container</h1>...
+  ...Custom folder summary description...
+  <tr>
+    <td>
+      <img style="padding: 0 1em 1em 0"
+           src="http://localhost/@@content.attachment/.../preview/100x100" />
+    </td>
+    <td style="padding-bottom: 1em">
+    	<h3><a href="http://localhost/container/content1/">My Content 1</a></h3>
+    	<div>My Content 1 description</div>
+    	<br />
+    </td>
+   </tr>
+   <tr>
+     <td>
+     </td>
+     <td style="padding-bottom: 1em">
+   	<h3><a href="http://localhost/container/content2/">My Content 2</a></h3>
+    	<div>My Content 2 description</div>
+    	<br />
+     </td>
+  </tr>
+  ...
+  </html>

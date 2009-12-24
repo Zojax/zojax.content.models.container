@@ -1,0 +1,23 @@
+<configure 
+   xmlns="http://namespaces.zope.org/zope"
+   xmlns:zojax="http://namespaces.zope.org/zojax"
+   i18n_domain="zojax.content.models.container">
+
+  <!-- content item -->
+  <zojax:viewmodel
+     name="content-item"
+     title="Content item"
+     description="A simple list showing Content Type, Name, Title, Size and Date"
+     schema=".interfaces.IContentItem"
+     for="..interfaces.IContainerModelsAware"
+     class=".model.ContentItem" />
+
+  <adapter factory=".model.getRenderer" />
+
+  <!-- vocabulary -->
+  <utility
+     name="content.extensions.containercontents"
+     provides="zope.schema.interfaces.IVocabularyFactory"
+     factory=".vocabulary.ContainerContents" />
+
+</configure>

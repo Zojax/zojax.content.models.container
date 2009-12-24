@@ -1,0 +1,23 @@
+<configure
+   xmlns="http://namespaces.zope.org/zope"
+   xmlns:zojax="http://namespaces.zope.org/zojax"
+   i18n_domain="zojax.content.models.container">
+
+  <!-- folder summary model -->
+  <zojax:viewmodel
+     name="folder-summary"
+     title="Folder summary"
+     description="An index page showing Thumdnail Images, along with Titles and Short Description."
+     for="..interfaces.IContainerModelsAware"
+     schema=".interfaces.IFolderSummaryModel"
+     class=".model.FolderSummaryModel" />
+
+  <!-- model renderer -->
+  <zojax:pagelet
+     for=".interfaces.IFolderSummaryModel"
+     class=".view.View"
+     template="view.pt"
+     provides="zojax.content.type.interfaces.IContentView"
+     type="content.model.renderer" />
+
+</configure>
